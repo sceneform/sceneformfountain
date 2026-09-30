@@ -59,7 +59,7 @@ Browser Script Tag
 ```
 ---
 ## Quick Start Example
-```html
+```js
 const SceneformFountain = require('sceneformfountain');
 
 const script = `
