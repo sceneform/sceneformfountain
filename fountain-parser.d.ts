@@ -1,23 +1,23 @@
 // fountain-parser.d.ts
 
-export type FountainLineType = |
-    "blank" |
-    "title_page" |
-    "scene_heading" |
-    "action" |
-    "shot" |
-    "character" |
-    "parenthetical" |
-    "dialogue" |
-    "lyrics" |
-    "transition" |
-    "centered" |
-    "section" |
-    "synopsis" |
-    "page_break" |
-    "note" |
-    "omit" |
-    "marker";
+export type FountainLineType =
+    | "blank"
+    | "title_page"
+    | "scene_heading"
+    | "action"
+    | "shot"
+    | "character"
+    | "parenthetical"
+    | "dialogue"
+    | "lyrics"
+    | "transition"
+    | "centered"
+    | "section"
+    | "synopsis"
+    | "page_break"
+    | "note"
+    | "omit"
+    | "marker";
 
 export interface FountainCharacterCue {
     name: string;
@@ -27,7 +27,7 @@ export interface FountainCharacterCue {
     voiceOver: boolean;
     offScreen: boolean;
 
-    forced ? : boolean;
+    forced?: boolean;
 }
 
 export interface FountainLine {
@@ -49,10 +49,8 @@ export interface FountainLine {
     depth?: number;
 }
 
-export type FountainDialogueElementType = |
-    "dialogue" |
-    "parenthetical" |
-    "lyrics";
+export type FountainDialogueElementType =
+    "dialogue" | "parenthetical" | "lyrics";
 
 export interface FountainDialogueElement {
     type: FountainDialogueElementType;
@@ -62,18 +60,17 @@ export interface FountainDialogueElement {
 
 export interface FountainBlock {
     type:
-        |
-        "title_page" |
-        "action" |
-        "dialogue" |
-        "lyrics" |
-        "scene_heading" |
-        "section" |
-        "synopsis" |
-        "shot" |
-        "transition" |
-        "centered" |
-        "page_break";
+        | "title_page"
+        | "action"
+        | "dialogue"
+        | "lyrics"
+        | "scene_heading"
+        | "section"
+        | "synopsis"
+        | "shot"
+        | "transition"
+        | "centered"
+        | "page_break";
 
     first: number;
     last: number;
@@ -137,10 +134,7 @@ export interface FountainOmit {
     unterminated: boolean;
 }
 
-export type FountainDiagnosticSeverity = |
-    "warning" |
-    "error" |
-    "info";
+export type FountainDiagnosticSeverity = "warning" | "error" | "info";
 
 export interface FountainDiagnostic {
     line: number;
@@ -179,7 +173,7 @@ export interface FountainParserDocument {
     notes: FountainNote[];
     omits: FountainOmit[];
     diagnostics: FountainDiagnostic[];
-    titlePage: Record<string, string> ;
+    titlePage: Record<string, string>;
     titleEntries: FountainTitleEntry[];
     characters: FountainCharacter[];
 }
@@ -192,21 +186,21 @@ export interface FountainInlineRun {
 }
 
 export interface FountainParseOptions {
-    caretLine ? : number;
+    caretLine?: number;
 
-    markers ? : RegExp | RegExp[];
+    markers?: RegExp | RegExp[];
 
-    maxCueLength ? : number;
+    maxCueLength?: number;
 }
 
 declare const SceneformFountain: {
     parse(
         input: string,
-        options?: FountainParseOptions
+        options?: FountainParseOptions,
     ): FountainParserDocument;
     parseInline(input: string): FountainInlineRun[];
     serialize(document: FountainParserDocument): string;
     LINE_TYPES: FountainLineType[];
 };
 
-export = SceneformFountain;
+export default SceneformFountain;
