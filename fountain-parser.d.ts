@@ -15,6 +15,7 @@ export type FountainLineType =
     | "section"
     | "synopsis"
     | "page_break"
+    | "special_page"
     | "note"
     | "omit"
     | "marker";
@@ -47,6 +48,10 @@ export interface FountainLine {
     inDialogue?: boolean;
     provisional?: boolean;
     depth?: number;
+    /** special_page lines: true on the opening and closing %%%. */
+    delimiter?: boolean;
+    /** special_page lines: true on the opening %%%. */
+    pageStart?: boolean;
 }
 
 export type FountainDialogueElementType =
@@ -56,6 +61,16 @@ export interface FountainDialogueElement {
     type: FountainDialogueElementType;
     line: number;
     text: string;
+}
+
+export type FountainPagePosition = "tl" | "tc" | "tr" | "cl" | "cc" | "cr" | "bl" | "bc" | "br";
+
+export interface FountainSpecialPage {
+    /** Line of the opening %%%. */
+    line: number;
+    /** Line of the closing %%%. */
+    lastLine: number;
+    items: Array<{ position: FountainPagePosition; text: string }>;
 }
 
 export interface FountainBlock {
@@ -70,7 +85,8 @@ export interface FountainBlock {
         | "shot"
         | "transition"
         | "centered"
-        | "page_break";
+        | "page_break"
+        | "special_page";
 
     first: number;
     last: number;
@@ -78,6 +94,8 @@ export interface FountainBlock {
     end: number;
     character?: FountainCharacterCue | null;
     elements?: FountainDialogueElement[];
+    /** special_page blocks: the parsed page. */
+    page?: FountainSpecialPage | null;
     speaker?: string;
     continued?: "explicit" | "auto" | null;
     dual?: "left" | "right" | null;
@@ -168,6 +186,8 @@ export interface FountainParserDocument {
     bom: boolean;
     lines: FountainLine[];
     blocks: FountainBlock[];
+    /** %%% ... %%% pages (Sceneform extension), in document order. */
+    specialPages: FountainSpecialPage[];
     scenes: FountainScene[];
     outline: FountainOutlineNode[];
     notes: FountainNote[];
