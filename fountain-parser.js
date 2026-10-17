@@ -1,6 +1,6 @@
 // fountain-parser.js
-// Fountain parser for sceneform app (v2)
-// GNU GPL v3.0.0 >
+// Fountain parser for sceneform app (v3)
+// GNU GPL v3.0.0>
 
 (function (root, factory) {
     if (typeof module === "object" && module.exports)
@@ -24,6 +24,7 @@
         "section",
         "synopsis",
         "page_break",
+        "special_page",
         "note",
         "omit",
         "marker",
@@ -489,6 +490,42 @@
         const titlePage = {};
         for (const e of titleEntries) titlePage[e.keyLower] = e.value;
 
+        // ---- special pages: %%% ... %%% (Sceneform extension)
+        // A block between two "%%%" lines is a page of its own (epigraph, quote,
+        // in memoriam...). Text is placed with <[pos]>...</[pos]> where pos is
+        // tl tc tr cl cc cr bl bc br (or l c r t b); untagged text goes to cc.
+        // An unclosed "%%%" is left alone (plain action).
+        const specialPages = [];
+        const POS_ALIAS = { l: "cl", c: "cc", r: "cr", t: "tc", b: "bc" };
+        const POSITIONS = new Set(["tl", "tc", "tr", "cl", "cc", "cr", "bl", "bc", "br"]);
+        for (let i = 0; i < lines.length; i++) {
+            if (lines[i].type || lines[i].visible.trim() !== "%%%") continue;
+            let end = i + 1;
+            while (end < lines.length && !(lines[end].type === null && lines[end].visible.trim() === "%%%")) end++;
+            if (end >= lines.length) break;
+            const body = [];
+            for (let j = i; j <= end; j++) {
+                const L = lines[j];
+                if (TRANSP.has(L.type)) continue;
+                L.type = "special_page";
+                L.text = j === i || j === end ? "" : L.visible;
+                L.delimiter = j === i || j === end;
+                if (!L.delimiter) body.push(L.visible);
+            }
+            lines[i].pageStart = true;
+            const text = body.join("\n");
+            const items = [];
+            const rest = text.replace(/<\[([a-z]{1,2})\]>([\s\S]*?)<\/\[\1\]>/gi, (m, pos, inner) => {
+                const p = (POS_ALIAS[pos.toLowerCase()] || pos.toLowerCase());
+                if (!POSITIONS.has(p)) return m;
+                items.push({ position: p, text: inner.trim() });
+                return "";
+            });
+            if (rest.trim()) items.unshift({ position: "cc", text: rest.trim() });
+            specialPages.push({ line: i, lastLine: end, items });
+            i = end;
+        }
+
         // ---- main classification pass
         const nextContent = (i) => {
             let j = i + 1;
@@ -628,6 +665,18 @@
             if (TRANSP.has(ty)) continue;
             if (ty === "blank") {
                 cur = null;
+                continue;
+            }
+            if (ty === "special_page") {
+                if (L.pageStart || !cur || cur.type !== "special_page")
+                    cur = open(
+                        {
+                            type: "special_page",
+                            page: specialPages.find((p) => p.line === i) || null,
+                        },
+                        i,
+                    );
+                cur.last = i;
                 continue;
             }
             if (ty === "title_page") {
@@ -871,6 +920,7 @@
             diagnostics,
             titlePage,
             titleEntries,
+            specialPages,
             characters: Array.from(chars.values()),
         };
     }
