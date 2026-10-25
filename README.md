@@ -169,6 +169,11 @@ interface FountainLine {
 }
 ```
 
+## TBA
+
+- Scene notes from cards in Inspector
+- Fix installer
+
 # License
 
 This project is open source and available under the terms defined in the LICENSE file.
